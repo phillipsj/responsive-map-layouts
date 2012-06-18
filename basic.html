@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+
+	<!-- Basic Page Needs
+  ================================================== -->
+	<meta charset="utf-8">
+	<title>Skelemap</title>
+	<meta name="description" content="">
+	<meta name="author" content="">
+    
+
+	<!-- Mobile Specific Metas
+  ================================================== -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<!-- CSS
+  ================================================== -->
+	<link rel="stylesheet" href="stylesheets/base.css">
+	<link rel="stylesheet" href="stylesheets/skeleton.css">
+	<link rel="stylesheet" href="stylesheets/layout.css">
+    <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.0/js/dojo/dijit/themes/tundra/tundra.css">
+    <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.0/js/esri/dijit/css/Popup.css">
+	<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Favicons
+	================================================== -->
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+    <style type="text/css">
+		#map{
+       		-moz-border-radius: 4px;
+			border-radius: 4px;
+        		overflow: hidden;
+        		border-style: solid;
+			border-color: rgb(221, 221, 221);
+			border-width: 2px;
+      	}
+
+		
+		#rightbar{padding-top: 10px; }
+	</style>
+
+</head>
+<body>
+	<!-- Primary Page Layout
+	================================================== -->
+
+	<!-- Delete everything in this .container and get started on your own site! -->
+	<div class="container">		
+		<div class="sixteen columns">
+			<h1 class="remove-bottom" style="margin-top: 40px">Skelemap</h1>
+			<h5>It's responsive!</h5>
+			<hr />
+		</div>
+		<div class="twelve columns">
+			<div id="map"></div>
+		</div>
+		<div id="rightbar" class="four columns">
+			<ul class="tabs">
+				<li><a class="active" href="#legend">Legend</a></li>
+				<li><a href="#info">info</a></li>
+			</ul>
+			<ul class="tabs-content">
+				<li class="active" id="legend">
+					<p>Legend goes here!  So much more can go here, maybe green eggs and ham.</p>
+				</li>	
+				<li id="info">
+					<p>Information goes here!</p>
+				</li>
+			</ul>
+		</div>		
+	</div><!-- container -->
+
+	<!-- JS
+	================================================== -->
+	<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+	<script src="javascripts/tabs.js"></script>
+	<script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.0compact"></script>	
+	<script type="text/javascript">
+    var dojoConfig = {
+      parseOnLoad: true
+    };
+    </script>	
+    <script type="text/javascript">
+       dojo.require("esri.map");
+                        var map;
+				  var legendLayers = [];
+	
+                  function init() {
+                        //onorientationchange doesn't always fire in a timely manner in Android so check for both orientationchange and resize
+                        var supportsOrientationChange = "onorientationchange" in window, orientationEvent = supportsOrientationChange ? "orientationchange" : "resize";
+
+                        window.addEventListener(orientationEvent, function() {
+                              orientationChanged();
+                        }, false);
+
+                        var initialExtent = new esri.geometry.Extent({
+							"xmin" : -10889085.61,
+							"ymin" : 3532422.44,
+							"xmax" : -10871887.28,
+							"ymax" : 3543888.00,
+							"spatialReference" : {
+								"wkid" : 102100
+							}
+						});
+
+
+                        map = new esri.Map("map", {
+                              extent : initialExtent
+                        });
+
+                        dojo.connect(map, "onLoad", function(evt) {
+                              map.infoWindow.resize(175, 125);
+                              var symbol = new esri.symbol.SimpleMarkerSymbol().setStyle(esri.symbol.SimpleMarkerSymbol.STYLE_X).setSize(12);
+                              symbol.outline.setWidth(4).setColor("blue");
+
+                              dojo.connect(map, "onClick", function(evt) {
+                                    map.graphics.clear();
+                                    var graphic = new esri.Graphic(evt.mapPoint, symbol);
+                                    map.graphics.add(graphic);
+
+                                    map.infoWindow.setTitle("<b><i>Title</i></b>");
+                                    map.infoWindow.setContent("Content goes here.");
+                                    map.infoWindow.show(evt.screenPoint, map.getInfoWindowAnchor(evt.screenPoint));
+                              });
+
+                              dojo.connect(map.infoWindow, "onHide", function() {
+                                    map.graphics.clear();
+                              });
+                        });
+
+                        var tiledMapServiceLayer = new esri.layers.ArcGISTiledMapServiceLayer("http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer");
+                        map.addLayer(tiledMapServiceLayer);
+                  }
+
+	
+
+                  function orientationChanged() {
+                        console.log("Orientation changed: " + window.orientation);
+                        if(map) {
+                              map.reposition();
+                              map.resize();
+                        }
+                  }
+
+                  dojo.addOnLoad(init);
+            </script>
+<!-- End Document
+================================================== -->
+</body>
+</html>
